@@ -1,23 +1,24 @@
 import "jest-extended";
 
 import { Managers, Transactions } from "@arkecosystem/crypto";
-import { BusinessRegistrationBuilder } from "../../src/builders";
-import { BusinessRegistrationTransaction } from "../../src/transactions";
 
-describe("Test builder",()=>{
-    it("Should verify correctly", ()=> {
+import { SensorDataBuilder } from "../../src/builders";
+import { SensorDataTransaction } from "../../src/transactions";
+
+describe("Test builder", () => {
+    it("Should verify correctly", () => {
         Managers.configManager.setFromPreset("testnet");
         Managers.configManager.setHeight(2); // v2 transactions (aip11) are available from height 2
-        Transactions.TransactionRegistry.registerTransactionType(BusinessRegistrationTransaction);
+        Transactions.TransactionRegistry.registerTransactionType(SensorDataTransaction);
 
-        const builder = new BusinessRegistrationBuilder();
+        const builder = new SensorDataBuilder();
         const actual = builder
-            .businessData("google","http://www.google.com")
-            .nonce("3")
+            .sensorData("temperature", "10")
+            .nonce("4")
             .sign("clay harbor enemy utility margin pretty hub comic piece aerobic umbrella acquire");
 
-
         console.log(actual.build().toJson());
+        console.log(JSON.stringify(actual.build().toJson()));
         expect(actual.build().verified).toBeTrue();
         expect(actual.verify()).toBeTrue();
     });

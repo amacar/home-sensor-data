@@ -1,4 +1,4 @@
-export interface IBusinessData {
-  name: string;
-  website: string;
+export interface ISensorData {
+    type: string;
+    value: string;
 }

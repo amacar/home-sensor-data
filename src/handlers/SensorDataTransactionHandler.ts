@@ -1,13 +1,14 @@
 import { Database, EventEmitter, State, TransactionPool } from "@arkecosystem/core-interfaces";
 import { Handlers, TransactionReader } from "@arkecosystem/core-transactions";
 import { Interfaces, Managers, Transactions } from "@arkecosystem/crypto";
-import { BusinessRegistrationAssetError, WalletIsAlreadyABusiness } from "../errors";
-import { IBusinessData } from "../interfaces";
-import { BusinessRegistrationTransaction } from "../transactions";
 
-export class BusinessRegistrationTransactionHandler extends Handlers.TransactionHandler {
+import { SensorDataAssetError } from "../errors";
+import { ISensorData } from "../interfaces";
+import { SensorDataTransaction } from "../transactions";
+
+export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     public getConstructor(): Transactions.TransactionConstructor {
-        return BusinessRegistrationTransaction;
+        return SensorDataTransaction;
     }
 
     public dependencies(): ReadonlyArray<Handlers.TransactionHandlerConstructor> {
@@ -15,9 +16,7 @@ export class BusinessRegistrationTransactionHandler extends Handlers.Transaction
     }
 
     public walletAttributes(): ReadonlyArray<string> {
-            return [
-                "transactionWalletKeyName",
-            ];
+        return ["transactionWalletKeyName"];
     }
 
     public async isActivated(): Promise<boolean> {
@@ -32,12 +31,12 @@ export class BusinessRegistrationTransactionHandler extends Handlers.Transaction
 
             for (const transaction of transactions) {
                 const wallet: State.IWallet = walletManager.findByPublicKey(transaction.senderPublicKey);
-                const asset: IBusinessData = {
-                    name: transaction.asset.businessData.name,
-                    website: transaction.asset.businessData.website,
+                const asset: ISensorData = {
+                    type: transaction.asset.sensorData.type,
+                    value: transaction.asset.sensorData.value,
                 };
 
-                wallet.setAttribute<IBusinessData>("transactionWalletKeyName", asset);
+                wallet.setAttribute<ISensorData>("transactionWalletKeyName", asset);
                 walletManager.reindex(wallet);
             }
         }
@@ -50,57 +49,25 @@ export class BusinessRegistrationTransactionHandler extends Handlers.Transaction
     ): Promise<void> {
         const { data }: Interfaces.ITransaction = transaction;
 
-        const { name, website }: { name: string; website: string } = data.asset.businessData;
-        if (!name || !website) {
-            throw new BusinessRegistrationAssetError();
-        }
-
-        if (wallet.hasAttribute("transactionWalletKeyName")) {
-            throw new WalletIsAlreadyABusiness();
+        const { type, value }: ISensorData = data.asset.sensorData;
+        if (!type || !value) {
+            throw new SensorDataAssetError();
         }
 
         await super.throwIfCannotBeApplied(transaction, wallet, databaseWalletManager);
     }
 
     public emitEvents(transaction: Interfaces.ITransaction, emitter: EventEmitter.EventEmitter): void {
-        emitter.emit("business.registered", transaction.data);
+        emitter.emit("sensorData.set", transaction.data);
     }
 
     public async canEnterTransactionPool(
         data: Interfaces.ITransactionData,
         pool: TransactionPool.IConnection,
         processor: TransactionPool.IProcessor,
-    ): Promise<{ type: string, message: string } | null>  {
-
+    ): Promise<{ type: string; message: string } | null> {
         const err = await this.typeFromSenderAlreadyInPool(data, pool);
-        if (err !== null) {
-            return err;
-        }
-
-        const { name }: { name: string } = data.asset.businessData;
-        const businessRegistrationsSameNameInPayload = processor
-            .getTransactions()
-            .filter(tx => tx.type === this.getConstructor().type && tx.asset.businessData.name === name);
-
-        if (businessRegistrationsSameNameInPayload.length > 1) {
-            return{
-                type: "ERR_CONFLICT",
-                message: `Multiple business registrations for "${name}" in transaction payload`,
-            };
-        }
-
-        const businessRegistrationsInPool: Interfaces.ITransactionData[] = Array.from(
-            await pool.getTransactionsByType(this.getConstructor().type),
-        ).map((memTx: Interfaces.ITransaction) => memTx.data);
-        const containsBusinessRegistrationForSameNameInPool: boolean = businessRegistrationsInPool.some(
-            transaction => transaction.asset.businessData.name === name,
-        );
-        if (containsBusinessRegistrationForSameNameInPool){
-            return {
-                type: "ERR_PENDING",
-                message: `Business registration for "${name}" already in the pool`,
-            }
-        }
+        if (err) return err;
 
         return null;
     }
@@ -111,7 +78,7 @@ export class BusinessRegistrationTransactionHandler extends Handlers.Transaction
     ): Promise<void> {
         await super.applyToSender(transaction, walletManager);
         const sender: State.IWallet = walletManager.findByPublicKey(transaction.data.senderPublicKey);
-        sender.setAttribute<IBusinessData>("transactionWalletKeyName", transaction.data.asset.businessData);
+        sender.setAttribute<ISensorData>("transactionWalletKeyName", transaction.data.asset.sensorData);
         walletManager.reindex(sender);
     }
 

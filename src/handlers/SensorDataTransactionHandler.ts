@@ -2,9 +2,11 @@ import { Database, EventEmitter, State, TransactionPool } from "@arkecosystem/co
 import { Handlers, TransactionReader } from "@arkecosystem/core-transactions";
 import { Interfaces, Managers, Transactions } from "@arkecosystem/crypto";
 
-import { SensorDataAssetError } from "../errors";
+import { SensorDataInputError, SensorDataImmutableError } from "../errors";
 import { ISensorData } from "../interfaces";
 import { SensorDataTransaction } from "../transactions";
+import { SensorDataEvent } from "../events";
+import { validateSensorData, validateSensorImmutableData } from "../validators";
 
 export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     public getConstructor(): Transactions.TransactionConstructor {
@@ -16,7 +18,7 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     }
 
     public walletAttributes(): ReadonlyArray<string> {
-        return ["transactionWalletKeyName"];
+        return ["sensorData"];
     }
 
     public async isActivated(): Promise<boolean> {
@@ -31,13 +33,10 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
 
             for (const transaction of transactions) {
                 const wallet: State.IWallet = walletManager.findByPublicKey(transaction.senderPublicKey);
-                const asset: ISensorData = {
-                    type: transaction.asset.sensorData.type,
-                    value: transaction.asset.sensorData.value,
-                };
-
-                wallet.setAttribute<ISensorData>("transactionWalletKeyName", asset);
-                walletManager.reindex(wallet);
+                if (!wallet.hasAttribute(this.walletAttributes()[0])) {
+                    wallet.setAttribute<ISensorData>(this.walletAttributes()[0], transaction.asset.sensorData);
+                    walletManager.reindex(wallet);
+                }
             }
         }
     }
@@ -49,16 +48,26 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     ): Promise<void> {
         const { data }: Interfaces.ITransaction = transaction;
 
-        const { type, value }: ISensorData = data.asset.sensorData;
-        if (!type || !value) {
-            throw new SensorDataAssetError();
+        // validate sensor data inputs
+        const err = validateSensorData(data.asset.sensorData);
+        if (err) {
+            throw new SensorDataInputError(err);
+        }
+
+        // check if sender wants to change sensor unit/type
+        if (wallet.hasAttribute(this.walletAttributes()[0])) {
+            const walletData = wallet.getAttribute<ISensorData>(this.walletAttributes()[0]);
+            const immutableErr = validateSensorImmutableData(data.asset.sensorData, walletData);
+            if (immutableErr) {
+                throw new SensorDataImmutableError(immutableErr);
+            }
         }
 
         await super.throwIfCannotBeApplied(transaction, wallet, databaseWalletManager);
     }
 
     public emitEvents(transaction: Interfaces.ITransaction, emitter: EventEmitter.EventEmitter): void {
-        emitter.emit("sensorData.set", transaction.data);
+        emitter.emit(SensorDataEvent, transaction.data);
     }
 
     public async canEnterTransactionPool(
@@ -66,10 +75,7 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
         pool: TransactionPool.IConnection,
         processor: TransactionPool.IProcessor,
     ): Promise<{ type: string; message: string } | null> {
-        const err = await this.typeFromSenderAlreadyInPool(data, pool);
-        if (err) return err;
-
-        return null;
+        return this.typeFromSenderAlreadyInPool(data, pool);
     }
 
     public async applyToSender(
@@ -78,7 +84,8 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     ): Promise<void> {
         await super.applyToSender(transaction, walletManager);
         const sender: State.IWallet = walletManager.findByPublicKey(transaction.data.senderPublicKey);
-        sender.setAttribute<ISensorData>("transactionWalletKeyName", transaction.data.asset.sensorData);
+        sender.setAttribute<ISensorData>(this.walletAttributes()[0], transaction.data.asset.sensorData);
+        console.log("pri senderju", sender.getAttribute(this.walletAttributes()[0]));
         walletManager.reindex(sender);
     }
 
@@ -88,7 +95,7 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
     ): Promise<void> {
         await super.revertForSender(transaction, walletManager);
         const sender: State.IWallet = walletManager.findByPublicKey(transaction.data.senderPublicKey);
-        sender.forgetAttribute("transactionWalletKeyName");
+        sender.forgetAttribute(this.walletAttributes()[0]);
         walletManager.reindex(sender);
     }
 

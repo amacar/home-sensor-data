@@ -1,8 +1,14 @@
 // tslint:disable:max-classes-per-file
 import { Errors } from "@arkecosystem/core-transactions";
 
-export class SensorDataAssetError extends Errors.TransactionError {
-    constructor() {
-        super(`Incomplete sensor data asset.`);
+export class SensorDataInputError extends Errors.TransactionError {
+    constructor(errorInfo) {
+        super(errorInfo);
+    }
+}
+
+export class SensorDataImmutableError extends Errors.TransactionError {
+    constructor(prop: string) {
+        super(`Sensor ${prop} cannot be changed`);
     }
 }

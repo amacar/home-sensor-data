@@ -1,9 +1,10 @@
 import "jest-extended";
 
-import { Managers, Transactions } from "@arkecosystem/crypto";
+import { Managers, Transactions, Utils } from "@arkecosystem/crypto";
 
 import { SensorDataBuilder } from "../../src/builders";
 import { SensorDataTransaction } from "../../src/transactions";
+import { SensorType, SensorUnit } from "../../src/enums";
 
 describe("Test builder", () => {
     it("Should verify correctly", () => {
@@ -13,12 +14,10 @@ describe("Test builder", () => {
 
         const builder = new SensorDataBuilder();
         const actual = builder
-            .sensorData("temperature", "10")
+            .sensorData(SensorType.TEMPERATURE, Utils.BigNumber.make(11), SensorUnit.CELSIUS)
             .nonce("4")
-            .sign("clay harbor enemy utility margin pretty hub comic piece aerobic umbrella acquire");
+            .sign("venue below waste gather spin cruise title still boost mother flash tuna");
 
-        console.log(actual.build().toJson());
-        console.log(JSON.stringify(actual.build().toJson()));
         expect(actual.build().verified).toBeTrue();
         expect(actual.verify()).toBeTrue();
     });

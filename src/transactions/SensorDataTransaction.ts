@@ -1,8 +1,10 @@
 import { Transactions } from "@arkecosystem/crypto";
+import { Utils } from "@arkecosystem/crypto";
 import ByteBuffer from "bytebuffer";
 
 import { ISensorData } from "../interfaces";
 import { BUSINESS_REGISTRATION_TYPE_GROUP, BUSINESS_REGISTRATION_TYPE, DEFAULT_TX_FEE } from "../constants";
+import { SensorType, SensorUnit } from "../enums";
 
 const { schemas } = Transactions;
 
@@ -25,15 +27,16 @@ export class SensorDataTransaction extends Transactions.Transaction {
                     properties: {
                         sensorData: {
                             type: "object",
-                            required: ["type", "value"],
+                            required: ["type", "value", "unit"],
                             properties: {
                                 type: {
-                                    type: "string",
-                                    pattern: "^[^\u0000]+$",
+                                    enum: [SensorType.TEMPERATURE, SensorType.HUMIDITY],
                                 },
                                 value: {
-                                    type: "string",
-                                    pattern: "^[^\u0000]+$",
+                                    bignumber: {},
+                                },
+                                unit: {
+                                    enum: [SensorUnit.CELSIUS, SensorUnit.PERCENT],
                                 },
                             },
                         },
@@ -50,16 +53,17 @@ export class SensorDataTransaction extends Transactions.Transaction {
 
         const sensorData = data.asset.sensorData as ISensorData;
 
-        const typeBytes = Buffer.from(sensorData.type, "utf8");
-        const valueBytes = Buffer.from(sensorData.value, "utf8");
+        const typeBytes = Buffer.from(sensorData.type);
+        const valueBytes = Buffer.from(sensorData.value.toString());
+        const unitBytes = Buffer.from(sensorData.unit);
 
-        const buffer = new ByteBuffer(typeBytes.length + valueBytes.length + 2, true);
+        const dataBytes = [typeBytes, valueBytes, unitBytes];
 
-        buffer.writeUint8(typeBytes.length);
-        buffer.append(typeBytes, "hex");
-
-        buffer.writeUint8(valueBytes.length);
-        buffer.append(valueBytes, "hex");
+        const buffer = new ByteBuffer(dataBytes.reduce((sum, prop) => (sum += prop.length), dataBytes.length), true);
+        for (const prop of dataBytes) {
+            buffer.writeUint8(prop.length);
+            buffer.append(prop);
+        }
 
         return buffer;
     }
@@ -68,10 +72,13 @@ export class SensorDataTransaction extends Transactions.Transaction {
         const { data } = this;
         const sensorData = {} as ISensorData;
         const typeLength = buf.readUint8();
-        sensorData.type = buf.readString(typeLength);
+        sensorData.type = buf.readString(typeLength) as SensorType;
 
         const valueLength = buf.readUint8();
-        sensorData.value = buf.readString(valueLength);
+        sensorData.value = Utils.BigNumber.make(buf.readString(valueLength));
+
+        const unitLength = buf.readUint8();
+        sensorData.unit = buf.readString(unitLength) as SensorUnit;
 
         data.asset = {
             sensorData,

@@ -13,9 +13,9 @@ export const validateSensorData = ({ type, value, unit }: ISensorData): string |
         if (unit !== SensorUnit.PERCENT) {
             return wrongUnitError(SensorType.HUMIDITY, SensorUnit.PERCENT);
         }
-        // if (value < 0 || value > 100) {
-        //     return "Humidity value must be between 0 and 100%.";
-        // }
+        if (value < 0 || value > 100) {
+            return "Humidity value must be between 0 and 100%.";
+        }
     }
 
     //validate temperature data

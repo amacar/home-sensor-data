@@ -14,7 +14,7 @@ export class SensorDataBuilder extends Transactions.TransactionBuilder<SensorDat
         this.data.asset = { sensorData: {} };
     }
 
-    public sensorData(type: SensorType, value: Utils.BigNumber, unit: SensorUnit): SensorDataBuilder {
+    public sensorData(type: SensorType, value: number, unit: SensorUnit): SensorDataBuilder {
         this.data.asset.sensorData = {
             type,
             value,

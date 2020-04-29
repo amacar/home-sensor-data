@@ -85,7 +85,6 @@ export class SensorDataTransactionHandler extends Handlers.TransactionHandler {
         await super.applyToSender(transaction, walletManager);
         const sender: State.IWallet = walletManager.findByPublicKey(transaction.data.senderPublicKey);
         sender.setAttribute<ISensorData>(this.walletAttributes()[0], transaction.data.asset.sensorData);
-        console.log("pri senderju", sender.getAttribute(this.walletAttributes()[0]));
         walletManager.reindex(sender);
     }
 

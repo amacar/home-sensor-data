@@ -5,6 +5,7 @@ import { Managers, Transactions } from "@arkecosystem/crypto";
 import { SensorDataBuilder } from "../../src/builders";
 import { SensorDataTransaction } from "../../src/transactions";
 import { RestClient } from "./rest-client";
+import { SensorType, SensorUnit } from "../../src/enums";
 
 describe("When e2e network is running with the plugin", () => {
     it("Should accept the transaction", async () => {
@@ -14,7 +15,7 @@ describe("When e2e network is running with the plugin", () => {
 
         const builder = new SensorDataBuilder();
         const actual = builder
-            .sensorData("temperature", "10")
+            .sensorData(SensorType.TEMPERATURE, 22, SensorUnit.CELSIUS)
             .nonce("3")
             .sign("clay harbor enemy utility margin pretty hub comic piece aerobic umbrella acquire");
 

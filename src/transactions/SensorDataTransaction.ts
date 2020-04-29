@@ -1,5 +1,4 @@
 import { Transactions } from "@arkecosystem/crypto";
-import { Utils } from "@arkecosystem/crypto";
 import ByteBuffer from "bytebuffer";
 
 import { ISensorData } from "../interfaces";
@@ -33,7 +32,7 @@ export class SensorDataTransaction extends Transactions.Transaction {
                                     enum: [SensorType.TEMPERATURE, SensorType.HUMIDITY],
                                 },
                                 value: {
-                                    bignumber: {},
+                                    type: "number",
                                 },
                                 unit: {
                                     enum: [SensorUnit.CELSIUS, SensorUnit.PERCENT],
@@ -75,7 +74,7 @@ export class SensorDataTransaction extends Transactions.Transaction {
         sensorData.type = buf.readString(typeLength) as SensorType;
 
         const valueLength = buf.readUint8();
-        sensorData.value = Utils.BigNumber.make(buf.readString(valueLength));
+        sensorData.value = parseFloat(buf.readString(valueLength));
 
         const unitLength = buf.readUint8();
         sensorData.unit = buf.readString(unitLength) as SensorUnit;

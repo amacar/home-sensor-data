@@ -1,6 +1,6 @@
 import "jest-extended";
 
-import { Managers, Transactions, Utils } from "@arkecosystem/crypto";
+import { Managers, Transactions } from "@arkecosystem/crypto";
 
 import { SensorDataBuilder } from "../../src/builders";
 import { SensorDataTransaction } from "../../src/transactions";
@@ -14,9 +14,9 @@ describe("Test builder", () => {
 
         const builder = new SensorDataBuilder();
         const actual = builder
-            .sensorData(SensorType.TEMPERATURE, Utils.BigNumber.make(11), SensorUnit.CELSIUS)
-            .nonce("4")
-            .sign("venue below waste gather spin cruise title still boost mother flash tuna");
+            .sensorData(SensorType.TEMPERATURE, 42, SensorUnit.CELSIUS)
+            .nonce("3")
+            .sign("craft imitate step mixture patch forest volcano business charge around girl confirm");
 
         expect(actual.build().verified).toBeTrue();
         expect(actual.verify()).toBeTrue();

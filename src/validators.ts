@@ -1,5 +1,5 @@
-import { ISensorData } from "./interfaces";
 import { SensorType, SensorUnit } from "./enums";
+import { ISensorData } from "./interfaces";
 
 const wrongUnitError = (type: SensorType, unit: SensorUnit) => `Sensor with ${type} type supports only ${unit} unit.`;
 

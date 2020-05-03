@@ -2,12 +2,13 @@
     "private": true,
     "name": "@amacar/home-sensor-data",
     "description": "Provides custom transaction implementation for storing home sensor data",
-    "version": "0.0.1",
+    "version": "3.0.0",
     "contributors": [
         "Amadej Pevec <amadej.pevec@gmail.com>"
     ],
     "license": "MIT",
     "main": "dist/index.js",
+    "types": "dist/index",
     "files": [
         "dist"
     ],
@@ -21,8 +22,7 @@
         "docs": "../../node_modules/typedoc/bin/typedoc src --out docs",
         "lint": "../../node_modules/tslint/bin/tslint -c ./tslint.json 'src/**/*.ts' '__tests__/**/*.ts' --fix",
         "test": "cross-env CORE_ENV=test jest --runInBand --forceExit",
-        "test:unit": "./node_modules/.bin/jest __tests__/unit --runInBand --forceExit",
-        "test:e2e": "./node_modules/.bin/jest __tests__/e2e --runInBand --forceExit",
+        "test:unit": "cross-env jest __tests__/unit/** --forceExit",
         "test:coverage": "cross-env CORE_ENV=test jest --coverage --coveragePathIgnorePatterns='/(defaults.ts|index.ts)$' --runInBand --forceExit",
         "test:debug": "cross-env CORE_ENV=test node --inspect-brk ../../node_modules/.bin/jest --runInBand",
         "test:watch": "cross-env CORE_ENV=test jest --runInBand --watch",
@@ -30,16 +30,14 @@
         "updates": "../../node_modules/npm-check-updates/bin/npm-check-updates -a"
     },
     "dependencies": {
-        "@arkecosystem/core-container": "2.6.31",
-        "@arkecosystem/core-event-emitter": "2.6.31",
-        "@arkecosystem/core-interfaces": "2.6.31",
-        "@arkecosystem/core-state": "2.6.31",
-        "@arkecosystem/core-transactions": "2.6.31",
-        "@arkecosystem/crypto": "2.6.31",
+        "@arkecosystem/core-database": "^3.0.0-next.0",
+        "@arkecosystem/core-kernel": "^3.0.0-next.0",
+        "@arkecosystem/core-state": "^3.0.0-next.0",
+        "@arkecosystem/core-transactions": "^3.0.0-next.0",
+        "@arkecosystem/crypto": "^3.0.0-next.0",
         "bytebuffer": "5.0.1"
     },
     "devDependencies": {
-        "@arkecosystem/core-utils": "2.6.31",
         "@sindresorhus/tsconfig": "0.7.0",
         "@types/jest": "25.2.1",
         "@types/node": "12.12.37",

@@ -1,16 +1,18 @@
+import { Utils as AppUtils } from "@arkecosystem/core-kernel";
 import { Transactions } from "@arkecosystem/crypto";
 import ByteBuffer from "bytebuffer";
 
-import { ISensorData } from "../interfaces";
-import { BUSINESS_REGISTRATION_TYPE_GROUP, BUSINESS_REGISTRATION_TYPE, DEFAULT_TX_FEE } from "../constants";
+import { BUSINESS_REGISTRATION_TYPE, BUSINESS_REGISTRATION_TYPE_GROUP, DEFAULT_TX_FEE } from "../constants";
 import { SensorType, SensorUnit } from "../enums";
+import { ISensorData } from "../interfaces";
 
 const { schemas } = Transactions;
 
 export class SensorDataTransaction extends Transactions.Transaction {
     public static typeGroup = BUSINESS_REGISTRATION_TYPE_GROUP;
     public static type = BUSINESS_REGISTRATION_TYPE;
-    public static key: string = "sensor_key";
+    public static key: string = "sensorData";
+    protected static defaultStaticFee = DEFAULT_TX_FEE;
 
     public static getSchema(): Transactions.schemas.TransactionSchema {
         return schemas.extend(schemas.transactionBaseSchema, {
@@ -45,11 +47,10 @@ export class SensorDataTransaction extends Transactions.Transaction {
         });
     }
 
-    protected static defaultStaticFee = DEFAULT_TX_FEE;
-
     public serialize(): ByteBuffer {
         const { data } = this;
 
+        AppUtils.assert.defined<ISensorData>(data.asset?.sensorData);
         const sensorData = data.asset.sensorData as ISensorData;
 
         const typeBytes = Buffer.from(sensorData.type);
@@ -58,7 +59,10 @@ export class SensorDataTransaction extends Transactions.Transaction {
 
         const dataBytes = [typeBytes, valueBytes, unitBytes];
 
-        const buffer = new ByteBuffer(dataBytes.reduce((sum, prop) => (sum += prop.length), dataBytes.length), true);
+        const buffer = new ByteBuffer(
+            dataBytes.reduce((sum, prop) => (sum += prop.length), dataBytes.length),
+            true,
+        );
         for (const prop of dataBytes) {
             buffer.writeUint8(prop.length);
             buffer.append(prop);

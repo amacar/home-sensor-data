@@ -1,1 +1,1 @@
-export * from "./SensorDataBuilder";
+export * from "./sensor-data-builder";

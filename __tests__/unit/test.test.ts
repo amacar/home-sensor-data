@@ -15,9 +15,10 @@ describe("Test builder", () => {
         const builder = new SensorDataBuilder();
         const actual = builder
             .sensorData(SensorType.TEMPERATURE, 42, SensorUnit.CELSIUS)
-            .nonce("3")
+            .nonce("4")
             .sign("craft imitate step mixture patch forest volcano business charge around girl confirm");
 
+        console.log(JSON.stringify(actual.build().toJson()));
         expect(actual.build().verified).toBeTrue();
         expect(actual.verify()).toBeTrue();
     });

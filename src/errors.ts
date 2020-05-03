@@ -2,7 +2,7 @@
 import { Errors } from "@arkecosystem/core-transactions";
 
 export class SensorDataInputError extends Errors.TransactionError {
-    constructor(errorInfo) {
+    constructor(errorInfo: string) {
         super(errorInfo);
     }
 }

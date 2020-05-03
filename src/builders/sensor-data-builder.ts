@@ -1,6 +1,6 @@
 import { Interfaces, Transactions, Utils } from "@arkecosystem/crypto";
 
-import { DEFAULT_TX_FEE, BUSINESS_REGISTRATION_TYPE, BUSINESS_REGISTRATION_TYPE_GROUP } from "../constants";
+import { BUSINESS_REGISTRATION_TYPE, BUSINESS_REGISTRATION_TYPE_GROUP, DEFAULT_TX_FEE } from "../constants";
 import { SensorType, SensorUnit } from "../enums";
 
 export class SensorDataBuilder extends Transactions.TransactionBuilder<SensorDataBuilder> {
@@ -15,11 +15,13 @@ export class SensorDataBuilder extends Transactions.TransactionBuilder<SensorDat
     }
 
     public sensorData(type: SensorType, value: number, unit: SensorUnit): SensorDataBuilder {
-        this.data.asset.sensorData = {
-            type,
-            value,
-            unit,
-        };
+        if (this.data.asset && this.data.asset.sensorData) {
+            this.data.asset.sensorData = {
+                type,
+                value,
+                unit,
+            };
+        }
 
         return this;
     }

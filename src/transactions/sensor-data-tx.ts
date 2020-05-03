@@ -2,16 +2,17 @@ import { Utils as AppUtils } from "@arkecosystem/core-kernel";
 import { Transactions } from "@arkecosystem/crypto";
 import ByteBuffer from "bytebuffer";
 
-import { BUSINESS_REGISTRATION_TYPE, BUSINESS_REGISTRATION_TYPE_GROUP, DEFAULT_TX_FEE } from "../constants";
+import { DEFAULT_TX_FEE, SENSOR_DATA_TYPE, SENSOR_DATA_TYPE_GROUP, SENSOR_DATA_VERSION } from "../constants";
 import { SensorType, SensorUnit } from "../enums";
 import { ISensorData } from "../interfaces";
 
 const { schemas } = Transactions;
 
 export class SensorDataTransaction extends Transactions.Transaction {
-    public static typeGroup = BUSINESS_REGISTRATION_TYPE_GROUP;
-    public static type = BUSINESS_REGISTRATION_TYPE;
+    public static typeGroup = SENSOR_DATA_TYPE_GROUP;
+    public static type = SENSOR_DATA_TYPE;
     public static key: string = "sensorData";
+    public static version = SENSOR_DATA_VERSION;
     protected static defaultStaticFee = DEFAULT_TX_FEE;
 
     public static getSchema(): Transactions.schemas.TransactionSchema {
@@ -19,8 +20,8 @@ export class SensorDataTransaction extends Transactions.Transaction {
             $id: "sensorData",
             required: ["asset", "typeGroup"],
             properties: {
-                type: { transactionType: BUSINESS_REGISTRATION_TYPE },
-                typeGroup: { const: BUSINESS_REGISTRATION_TYPE_GROUP },
+                type: { transactionType: SENSOR_DATA_TYPE },
+                typeGroup: { const: SENSOR_DATA_TYPE_GROUP },
                 amount: { bignumber: { minimum: 0, maximum: 0 } },
                 asset: {
                     type: "object",

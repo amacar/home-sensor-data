@@ -1,21 +1,21 @@
 import { Interfaces, Transactions, Utils } from "@arkecosystem/crypto";
 
-import { BUSINESS_REGISTRATION_TYPE, BUSINESS_REGISTRATION_TYPE_GROUP, DEFAULT_TX_FEE } from "../constants";
+import { DEFAULT_TX_FEE, SENSOR_DATA_TYPE, SENSOR_DATA_TYPE_GROUP, SENSOR_DATA_VERSION } from "../constants";
 import { SensorType, SensorUnit } from "../enums";
 
 export class SensorDataBuilder extends Transactions.TransactionBuilder<SensorDataBuilder> {
-    constructor() {
+    public constructor() {
         super();
-        this.data.type = BUSINESS_REGISTRATION_TYPE;
-        this.data.typeGroup = BUSINESS_REGISTRATION_TYPE_GROUP;
-        this.data.version = 2;
+        this.data.type = SENSOR_DATA_TYPE;
+        this.data.typeGroup = SENSOR_DATA_TYPE_GROUP;
+        this.data.version = SENSOR_DATA_VERSION;
         this.data.fee = DEFAULT_TX_FEE;
         this.data.amount = Utils.BigNumber.ZERO;
         this.data.asset = { sensorData: {} };
     }
 
     public sensorData(type: SensorType, value: number, unit: SensorUnit): SensorDataBuilder {
-        if (this.data.asset && this.data.asset.sensorData) {
+        if (this.data.asset) {
             this.data.asset.sensorData = {
                 type,
                 value,
